@@ -1,0 +1,7 @@
+data/
+data/archive/
+data/mhist/
+data/xray/
+.ipynb_checkpoints/
+*.egg-info/
+venv/
