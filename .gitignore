@@ -5,3 +5,4 @@ data/xray/
 .ipynb_checkpoints/
 *.egg-info/
 venv/
+__pycache__/
