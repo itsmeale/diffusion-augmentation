@@ -6,3 +6,4 @@ data/xray/
 *.egg-info/
 venv/
 __pycache__/
+outputs/

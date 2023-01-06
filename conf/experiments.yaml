@@ -1,0 +1,11 @@
+experiment:
+  name: XRAY1000
+  version: 0.0.1
+  dataset: XRAY
+  use_cuda: true
+  
+  model:
+    epochs: 1000
+    learning_rate: 0.001
+    train_batch_size: 256
+    test_batch_size: 256
