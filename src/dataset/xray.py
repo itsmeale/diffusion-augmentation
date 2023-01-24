@@ -1,14 +1,12 @@
 import gc
-import numpy as np
 import os
 from pathlib import Path
 
+import numpy as np
 import torch
-from torch.utils.data import Dataset
 import torchvision as tvis
-
 from PIL import Image
-
+from torch.utils.data import Dataset
 
 IMAGE_RESOLUTION = (256, 256)
 

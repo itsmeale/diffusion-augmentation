@@ -9,22 +9,18 @@ de experimentos do projeto.
 from pathlib import Path
 from time import time
 
-import pandas as pd
-import numpy as np
-
 import hydra
+import numpy as np
+import pandas as pd
 import torch
+from loguru import logger
+from sklearn.metrics import classification_report
 from torch import nn
 from torch.utils.data import DataLoader
 
 from src.dataset.mhist import MHISTDataset
 from src.dataset.xray import XRayDataset
-
-from sklearn.metrics import classification_report
-
 from src.model import ConvNet
-
-from loguru import logger
 
 
 class TrainTestLoop:

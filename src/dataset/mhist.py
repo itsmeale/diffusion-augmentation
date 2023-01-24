@@ -1,10 +1,8 @@
 import pandas as pd
-
 import torch
-from torch.utils.data import Dataset
 import torchvision as tvis
 from PIL import Image
-
+from torch.utils.data import Dataset
 
 MHIST_IMAGE_PATH: str = "data/mhist/images/{image_name}"
 
