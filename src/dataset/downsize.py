@@ -37,7 +37,7 @@ if __name__ == "__main__":
     d = DatasetDownsize(
         "data/raw/xray/train/NORMAL",
         "data/preprocessed/xray_resized/train/NORMAL",
-        (256, 256),
+        (64, 64),
         "jpeg",
     )
 
