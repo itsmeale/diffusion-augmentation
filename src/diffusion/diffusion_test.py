@@ -1,8 +1,6 @@
-
 import matplotlib.pyplot as plt
+from denoising_diffusion_pytorch import GaussianDiffusion, Trainer, Unet
 from torchvision.utils import make_grid
-from denoising_diffusion_pytorch import Unet, GaussianDiffusion, Trainer
-
 
 model = Unet(
     dim=16,
@@ -11,10 +9,7 @@ model = Unet(
 ).cuda()
 
 diffusion = GaussianDiffusion(
-    model,
-    image_size=64,
-    timesteps=100,
-    loss_type='l1'
+    model, image_size=64, timesteps=100, loss_type="l1"
 ).cuda()
 
 
@@ -25,7 +20,7 @@ trainer = Trainer(
     train_lr=1e-5,
     train_num_steps=10_000,
     gradient_accumulate_every=1,
-    ema_decay=.995,
+    ema_decay=0.995,
     amp=False,
 )
 

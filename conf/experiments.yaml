@@ -1,7 +1,6 @@
 experiment:
-  name: XRAY1000
-  version: 0.0.2
-  dataset: XRAY
+  name: XRAY-LOW-RESOLUTION
+  version: 0.0.0
   use_cuda: true
   
   model:
@@ -9,3 +8,11 @@ experiment:
     learning_rate: 0.001
     train_batch_size: 256
     test_batch_size: 256
+    input_dropout: 0.2
+    dense_dropout: 0.2
+
+  dataset:
+    name: XRAY
+    image_resolution: 64
+    normalization_mean: 0
+    normalization_std: 1
