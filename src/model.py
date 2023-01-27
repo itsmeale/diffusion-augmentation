@@ -13,6 +13,7 @@ class ConvNet(nn.Module):
         self.input_drop = nn.Dropout2d(input_dropout)
         self.dense_drop = nn.Dropout1d(dense_dropout)
 
+        # self.fc1 = nn.Linear(15876, 512)
         self.fc1 = nn.Linear(144, 512)
         self.fc2 = nn.Linear(512, 1)
 
