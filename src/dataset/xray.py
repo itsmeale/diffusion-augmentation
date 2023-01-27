@@ -24,7 +24,7 @@ class XRayDataset(Dataset):
         self.preprocess = tvis.transforms.Compose(
             [
                 tvis.transforms.ToTensor(),
-                tvis.transforms.Resize((image_resolution, image_resolution)),
+                # tvis.transforms.Resize((image_resolution, image_resolution)),
                 tvis.transforms.Grayscale(),
                 tvis.transforms.Normalize((normalize_mean), (normalize_std)),
             ]
