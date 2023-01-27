@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from loguru import logger
 from sklearn.metrics import f1_score
+from torch.utils.data import DataLoader
 
 
 class TrainTestLoop:
@@ -12,19 +13,21 @@ class TrainTestLoop:
         model,
         loss_fn,
         optimizer,
-        train_loader,
-        val_loader,
+        train_dataset,
+        val_dataset,
         epochs,
         experiment_logger,
         max_epochs_without_improvement,
+        batch_size,
     ):
         self.model = model
         self.loss_fn = loss_fn
         self.optimizer = optimizer
-        self.train_loader = train_loader
-        self.val_loader = val_loader
+        self.train_dataset = train_dataset
+        self.val_dataset = val_dataset
         self.epochs = epochs
         self.experiment_logger = experiment_logger
+        self.batch_size = batch_size
         self.best_test_f1 = -np.inf
         self.best_state_dict = None
         self.max_epochs_without_improvement = max_epochs_without_improvement
@@ -48,7 +51,11 @@ class TrainTestLoop:
         n = 0
         self.model.train()
 
-        for images, targets in self.train_loader:
+        train_loader = DataLoader(
+            self.train_dataset, batch_size=self.batch_size, shuffle=True
+        )
+
+        for images, targets in train_loader:
             pred = self.model.forward(images)
 
             loss = self.loss_fn(pred, targets.unsqueeze(1))
@@ -88,8 +95,12 @@ class TrainTestLoop:
 
         self.optimizer.zero_grad()
 
+        val_loader = DataLoader(
+            self.val_dataset, batch_size=self.batch_size, shuffle=True
+        )
+
         with torch.no_grad():
-            for images, targets in self.val_loader:
+            for images, targets in val_loader:
                 pred = self.model(images)
                 val_loss = self.loss_fn(pred, targets.unsqueeze(1))
                 running_loss += val_loss.item()
@@ -117,6 +128,10 @@ class TrainTestLoop:
 
     def run(self):
         logger.info("Starting train test loop")
+
+        logger.warning(
+            f"train set len: {len(self.train_dataset)} - test set len: {len(self.val_dataset)}"
+        )
 
         for i in range(self.epochs):
             _train_loss, _train_f1 = self.train_loop()

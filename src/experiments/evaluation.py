@@ -1,25 +1,42 @@
+import numpy as np
 import torch
-from sklearn.metrics import classification_report
+from loguru import logger
+from sklearn.metrics import auc, classification_report, precision_recall_curve
+from torch.utils.data import DataLoader
 
 
-def make_classification_report(model, test_loader):
-    all_labels = []
-    all_preds = []
+def make_predictions(model, test_dataset):
+    labels = []
+    scores = []
+
+    print(len(test_dataset))
+    test_loader = DataLoader(test_dataset, batch_size=len(test_dataset))
 
     with torch.no_grad():
-        for imgs, labels in test_loader:
-            preds = model(imgs).detach().cpu().numpy()
-            labels = labels.cpu().numpy()
+        for images, y in test_loader:
+            _scores = model(images).detach().cpu().flatten().numpy().tolist()
+            _labels = y.cpu().flatten().numpy().tolist()
 
-            preds[preds >= 0.5] = 1
-            preds[preds < 0.5] = 0
+            labels += list(_labels)
+            scores += list(_scores)
 
-            all_labels += list(labels)
-            all_preds += list(preds)
+    logger.warning(f"labels: {len(labels)}")
+    logger.warning(f"scores: {len(scores)}")
 
-    return classification_report(all_labels, all_preds)
+    return labels, scores
 
 
-def log_experiment_report(model, test_loader, exp_logger):
-    classifier_report = make_classification_report(model, test_loader)
+def log_experiment_report(model, test_dataset, exp_logger):
+
+    logger.warning(f"Starting evaluation - test set samples = {len(test_dataset)}")
+
+    labels, scores = make_predictions(model, test_dataset)
+    y_pred = np.where(np.array(scores) >= 0.5, 1, 0)
+
+    classifier_report = classification_report(labels, y_pred)
     exp_logger.log_text("Classification Report", classifier_report)
+
+    precision, recall, thresholds = precision_recall_curve(labels, scores)
+    auc_precision_recall = str(auc(recall, precision))
+
+    exp_logger.log_text("Precision-Recall-AUC", auc_precision_recall)

@@ -71,7 +71,7 @@ def load_dataset(
 
 def load_xray_dataset(dataset_resolution, normalize_params):
     train_dataset = XRayDataset(
-        root_dir="data/preprocessed/xray_resized/train_augmented_half_half",
+        root_dir="data/preprocessed/xray_resized/train_augmented_half",
         image_resolution=dataset_resolution,
         normalize_params=normalize_params,
     )
@@ -80,7 +80,7 @@ def load_xray_dataset(dataset_resolution, normalize_params):
         image_resolution=dataset_resolution,
         normalize_params=normalize_params,
     )
-    return test_dataset, train_dataset
+    return train_dataset, test_dataset
 
 
 def load_mhist_dataset():
@@ -153,15 +153,16 @@ def train(cfg):
         model,
         loss_fn,
         optimizer,
-        train_loader,
-        test_loader,
+        train_dataset,
+        test_dataset,
         epochs=EPOCHS,
         experiment_logger=exp_logger,
         max_epochs_without_improvement=MAX_EPOCHS_WITHOUT_IMPROVEMENT,
+        batch_size=TRAIN_BATCH_SIZE,
     ).run()
 
     log_model_graph_and_images(exp_logger, model, train_dataset)
-    log_experiment_report(model, test_loader, exp_logger)
+    log_experiment_report(model, test_dataset, exp_logger)
 
 
 def log_model_graph_and_images(exp_logger, model, train_dataset):
