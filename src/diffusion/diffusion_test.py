@@ -1,8 +1,7 @@
 from pathlib import Path
-
 from time import time
-
 from uuid import uuid1
+
 import torch
 import torchvision as tvis
 from denoising_diffusion_pytorch import GaussianDiffusion, Trainer, Unet

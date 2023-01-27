@@ -71,12 +71,12 @@ def load_dataset(
 
 def load_xray_dataset(dataset_resolution, normalize_params):
     train_dataset = XRayDataset(
-        root_dir="data/preprocessed/xray_augmented/train",
+        root_dir="data/preprocessed/xray_resized/train_augmented_half_half",
         image_resolution=dataset_resolution,
         normalize_params=normalize_params,
     )
     test_dataset = XRayDataset(
-        root_dir="data/preprocessed/xray_augmented/test",
+        root_dir="data/preprocessed/xray_resized/test",
         image_resolution=dataset_resolution,
         normalize_params=normalize_params,
     )
@@ -102,6 +102,7 @@ def train(cfg):
     EPOCHS = cfg.experiment.model.epochs
     INPUT_DROPOUT = cfg.experiment.model.input_dropout
     DENSE_DROPOUT = cfg.experiment.model.dense_dropout
+    MAX_EPOCHS_WITHOUT_IMPROVEMENT = cfg.experiment.model.max_epochs_without_improvement
     # dataset metadata
     DATASET_NAME = cfg.experiment.dataset.name
     DATASET_RESOLUTION = cfg.experiment.dataset.image_resolution
@@ -156,6 +157,7 @@ def train(cfg):
         test_loader,
         epochs=EPOCHS,
         experiment_logger=exp_logger,
+        max_epochs_without_improvement=MAX_EPOCHS_WITHOUT_IMPROVEMENT,
     ).run()
 
     log_model_graph_and_images(exp_logger, model, train_dataset)
