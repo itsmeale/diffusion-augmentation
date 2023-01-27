@@ -34,11 +34,44 @@ class DatasetDownsize:
 
 
 if __name__ == "__main__":
-    d = DatasetDownsize(
-        "data/raw/xray/train/NORMAL",
-        "data/preprocessed/xray_resized/train/NORMAL",
-        (64, 64),
-        "jpeg",
-    )
+    datasets_to_downsize = [
+        DatasetDownsize(
+            "data/raw/xray/train/NORMAL",
+            "data/preprocessed/xray_resized/train/NORMAL",
+            (64, 64),
+            "jpeg",
+        ),
+        DatasetDownsize(
+            "data/raw/xray/test/NORMAL",
+            "data/preprocessed/xray_resized/test/NORMAL",
+            (64, 64),
+            "jpeg",
+        ),
+        DatasetDownsize(
+            "data/raw/xray/val/NORMAL",
+            "data/preprocessed/xray_resized/val/NORMAL",
+            (64, 64),
+            "jpeg",
+        ),
+        DatasetDownsize(
+            "data/raw/xray/train/NORMAL",
+            "data/preprocessed/xray_resized/train/PNEUMONIA",
+            (64, 64),
+            "jpeg",
+        ),
+        DatasetDownsize(
+            "data/raw/xray/test/PNEUMONIA",
+            "data/preprocessed/xray_resized/test/PNEUMONIA",
+            (64, 64),
+            "jpeg",
+        ),
+        DatasetDownsize(
+            "data/raw/xray/val/PNEUMONIA",
+            "data/preprocessed/xray_resized/val/PNEUMONIA",
+            (64, 64),
+            "jpeg",
+        ),
+    ]
 
-    d.downsize()
+    for d in datasets_to_downsize:
+        d.downsize()
