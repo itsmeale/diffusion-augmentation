@@ -54,7 +54,7 @@ if __name__ == "__main__":
             "jpeg",
         ),
         DatasetDownsize(
-            "data/raw/xray/train/NORMAL",
+            "data/raw/xray/train/PNEUMONIA",
             "data/preprocessed/xray_resized/train/PNEUMONIA",
             (64, 64),
             "jpeg",
