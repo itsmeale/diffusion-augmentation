@@ -1,5 +1,5 @@
 outs:
-- md5: bc7a98703e190c0ef8e9712126a6f8a1.dir
-  size: 13633915
-  nfiles: 31
+- md5: cc0a4c0f59e2d52b659daf5f77e2cdba.dir
+  size: 1710508
+  nfiles: 24
   path: runs
