@@ -71,7 +71,7 @@ def load_dataset(
 
 def load_xray_dataset(dataset_resolution, normalize_params):
     train_dataset = XRayDataset(
-        root_dir="data/preprocessed/xray_resized/train_augmented_half",
+        root_dir="data/preprocessed/xray_resized/train_augmented",
         image_resolution=dataset_resolution,
         normalize_params=normalize_params,
     )
