@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from functools import partial
-from typing import Tuple
+from typing import Tuple, Dict
 
 import hydra
 import torch
@@ -39,6 +39,8 @@ def make_hparam_dict(
 
 
 def load_dataset(
+    train_path: str,
+    test_path: str,
     dataset_name: str,
     dataset_resolution: int,
     normalize_params: Tuple,
@@ -51,6 +53,8 @@ def load_dataset(
         "MHIST": load_mhist_dataset,
         "XRAY": partial(
             load_xray_dataset,
+            train_path=train_path,
+            test_path=test_path,
             dataset_resolution=dataset_resolution,
             normalize_params=normalize_params,
         ),
@@ -69,14 +73,14 @@ def load_dataset(
     return train_dataset, test_dataset, train_loader, test_loader
 
 
-def load_xray_dataset(dataset_resolution, normalize_params):
+def load_xray_dataset(train_path, test_path, dataset_resolution, normalize_params):
     train_dataset = XRayDataset(
-        root_dir="data/preprocessed/xray_resized/train_augmented",
+        root_dir=train_path,
         image_resolution=dataset_resolution,
         normalize_params=normalize_params,
     )
     test_dataset = XRayDataset(
-        root_dir="data/preprocessed/xray_resized/test",
+        root_dir=test_path,
         image_resolution=dataset_resolution,
         normalize_params=normalize_params,
     )
@@ -89,26 +93,24 @@ def load_mhist_dataset():
     return test_dataset, train_dataset
 
 
-@hydra.main(version_base=None, config_path="../conf", config_name="experiments")
-def train(cfg):
+def train(experiment_cfg: Dict):
     # experiment metadata
-    EXP_NAME = cfg.experiment.name
-    EXP_VERSION = cfg.experiment.version
-    USE_CUDA = cfg.experiment.use_cuda
+    EXP_NAME = experiment_cfg.name
+    USE_CUDA = experiment_cfg.use_cuda
     # model metadata
-    LR = cfg.experiment.model.learning_rate
-    TRAIN_BATCH_SIZE = cfg.experiment.model.train_batch_size
-    TEST_BATCH_SIZE = cfg.experiment.model.test_batch_size
-    EPOCHS = cfg.experiment.model.epochs
-    INPUT_DROPOUT = cfg.experiment.model.input_dropout
-    DENSE_DROPOUT = cfg.experiment.model.dense_dropout
-    MAX_EPOCHS_WITHOUT_IMPROVEMENT = cfg.experiment.model.max_epochs_without_improvement
+    LR = experiment_cfg.model.learning_rate
+    TRAIN_BATCH_SIZE = experiment_cfg.model.train_batch_size
+    TEST_BATCH_SIZE = experiment_cfg.model.test_batch_size
+    EPOCHS = experiment_cfg.model.epochs
+    INPUT_DROPOUT = experiment_cfg.model.input_dropout
+    DENSE_DROPOUT = experiment_cfg.model.dense_dropout
+    MAX_EPOCHS_WITHOUT_IMPROVEMENT = experiment_cfg.model.max_epochs_without_improvement
     # dataset metadata
-    DATASET_NAME = cfg.experiment.dataset.name
-    DATASET_RESOLUTION = cfg.experiment.dataset.image_resolution
+    DATASET_NAME = experiment_cfg.dataset.name
+    DATASET_RESOLUTION = experiment_cfg.dataset.image_resolution
     NORMALIZE_PARAMS = (
-        cfg.experiment.dataset.normalization_mean,
-        cfg.experiment.dataset.normalization_std,
+        experiment_cfg.dataset.normalization_mean,
+        experiment_cfg.dataset.normalization_std,
     )
 
     hparams_dict = make_hparam_dict(
@@ -128,6 +130,8 @@ def train(cfg):
     )
 
     train_dataset, test_dataset, train_loader, test_loader = load_dataset(
+        train_path=experiment_cfg.dataset.train_path,
+        test_path=experiment_cfg.dataset.test_path,
         dataset_name=DATASET_NAME,
         dataset_resolution=DATASET_RESOLUTION,
         normalize_params=NORMALIZE_PARAMS,
@@ -161,16 +165,16 @@ def train(cfg):
         batch_size=TRAIN_BATCH_SIZE,
     ).run()
 
-    log_model_graph_and_images(exp_logger, model, train_dataset)
-    log_experiment_report(model, test_dataset, exp_logger)
+    log_experiment_report(experiment_cfg.name, model, test_dataset, exp_logger)
 
 
-def log_model_graph_and_images(exp_logger, model, train_dataset):
-    loader = DataLoader(train_dataset[:25], batch_size=25)
-    to_log_images, _ = next(iter(loader))
-    exp_logger.log_graph(model, to_log_images)
-    exp_logger.log_images(to_log_images)
+@hydra.main(version_base=None, config_path="../conf", config_name="experiments")
+def main(cfg):
+    for experiment_cfg in cfg.experiments:
+        for i in range(50):
+            train(experiment_cfg=experiment_cfg)
+
 
 
 if __name__ == "__main__":
-    train()
+    main()

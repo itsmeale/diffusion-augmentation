@@ -137,8 +137,8 @@ class TrainTestLoop:
             _train_loss, _train_f1 = self.train_loop()
             _test_loss, _test_f1 = self.test_loop()
 
-            self.log_metric("F1-Score (Macro)", _train_f1, _test_f1, i)
-            self.log_metric("Loss", _train_loss, _test_loss, i)
+            self.log_metric("f1_macro", _train_f1, _test_f1, i)
+            self.log_metric("loss", _train_loss, _test_loss, i)
 
             logger.info(f"Epoch {i} - train f1: {_train_f1} - test f1: {_test_f1}")
 

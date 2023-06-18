@@ -16,7 +16,7 @@ class XRAYDiffusionModel:
         ).cuda()
 
         self.diffusion = GaussianDiffusion(
-            self.model, image_size=64, timesteps=150, loss_type="l1"
+            self.model, image_size=64, timesteps=150,
         ).cuda()
 
         self.trainer = Trainer(
@@ -56,21 +56,33 @@ def save_imgs(imgs, folder):
         tvis.utils.save_image(img, file_path)
 
 
-def main():
+def synthetize_train(ds_class):
     xray_diff = XRAYDiffusionModel(
-        images_path="data/preprocessed/xray_resized/train/NORMAL"
+        images_path=f"data/preprocessed/xray_resized/train/{ds_class}"
     )
+
+    xray_diff.fit().save()
 
     model = xray_diff.load()
 
-    images_to_sample = 2534
+    images_to_sample = 3875
     sampled = 0
     batch = 500
 
     while sampled <= images_to_sample:
         images = model.sample(min(batch, images_to_sample - sampled))
-        save_imgs(images, "data/preprocessed/xray_generated/train/NORMAL")
+        save_imgs(images, f"data/preprocessed/xray_generated/train/{ds_class}")
         sampled += batch
+
+
+def main():
+    classes = [
+        "NORMAL",
+        "PNEUMONIA",
+    ]
+
+    for c in classes:
+        synthetize_train(c)
 
 
 if __name__ == "__main__":

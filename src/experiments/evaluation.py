@@ -1,8 +1,35 @@
+import pickle
+from typing import List
+
+from uuid import uuid4
+
+from dataclasses import dataclass
 import numpy as np
 import torch
 from loguru import logger
-from sklearn.metrics import auc, classification_report, precision_recall_curve
+from sklearn.metrics import precision_recall_curve, confusion_matrix
 from torch.utils.data import DataLoader
+
+
+@dataclass
+class EvalMetrics:
+    experiment_name: str
+
+    precision: float
+    recall: float
+    accuracy: float
+
+    true_positive: int
+    true_negative: int
+
+    false_positive: int
+    false_negative: int
+
+    precision_recall_curve: List[List[float]]
+
+    y_true: List[int]
+    y_pred: List[int]
+    scores: List[float]
 
 
 def make_predictions(model, test_dataset):
@@ -26,17 +53,37 @@ def make_predictions(model, test_dataset):
     return labels, scores
 
 
-def log_experiment_report(model, test_dataset, exp_logger):
+def log_experiment_report(exp_name: str, model, test_dataset, exp_logger):
 
     logger.warning(f"Starting evaluation - test set samples = {len(test_dataset)}")
 
     labels, scores = make_predictions(model, test_dataset)
     y_pred = np.where(np.array(scores) >= 0.5, 1, 0)
-
-    classifier_report = classification_report(labels, y_pred)
-    exp_logger.log_text("Classification Report", classifier_report)
-
     precision, recall, thresholds = precision_recall_curve(labels, scores)
-    auc_precision_recall = str(auc(recall, precision))
+    tn, fp, fn, tp = confusion_matrix(labels, y_pred).ravel()
 
-    exp_logger.log_text("Precision-Recall-AUC", auc_precision_recall)
+    eval_dataclass = EvalMetrics(
+        experiment_name=exp_name,
+
+        precision= tp / (tp+fp),
+        recall= tp / (tp+fn),
+        accuracy= (tp+tn) / (tp+tn+fp+fn),
+
+        true_positive=tp,
+        true_negative=tn,
+
+        false_positive=fp,
+        false_negative=fn,
+
+        precision_recall_curve=(precision, recall, thresholds),
+
+        y_true=labels,
+        y_pred=y_pred,
+        scores=scores,
+    )
+
+    with open(f"data/results/eval_metrics/{str(uuid4())}.pkl", "wb") as f:
+        pickle.dump(eval_dataclass, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+

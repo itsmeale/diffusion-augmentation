@@ -1,19 +1,63 @@
-experiment:
-  name: XRAY-64x64-BALANCED
-  version: 0.0.0
-  use_cuda: true
-  
-  model:
-    epochs: 10000
-    max_epochs_without_improvement: 1000
-    learning_rate: 0.001
-    train_batch_size: 256
-    test_batch_size: 256
-    input_dropout: 0.2
-    dense_dropout: 0
+experiments:
 
-  dataset:
-    name: XRAY
-    image_resolution: 64
-    normalization_mean: 0
-    normalization_std: 1
+  - name: XRAY-64x64-SYNTHETIC-BALANCED
+    use_cuda: true
+    
+    model:
+      epochs: 2000
+      max_epochs_without_improvement: 500
+      learning_rate: 0.001
+      train_batch_size: 256
+      test_batch_size: 256
+      input_dropout: 0.2
+      dense_dropout: 0
+
+    dataset:
+      name: XRAY
+      train_path: data/preprocessed/xray_generated/train
+      test_path: data/preprocessed/xray_resized/test
+      image_resolution: 64
+      normalization_mean: 0
+      normalization_std: 1
+  
+  - name: XRAY-64x64-SYNTHETIC-UNBALANCED
+    use_cuda: true
+    
+    model:
+      epochs: 2000
+      max_epochs_without_improvement: 500
+      learning_rate: 0.001
+      train_batch_size: 256
+      test_batch_size: 256
+      input_dropout: 0.2
+      dense_dropout: 0
+
+    dataset:
+      name: XRAY
+      train_path: data/preprocessed/xray_generated_unbalanced/train
+      test_path: data/preprocessed/xray_resized/test
+      image_resolution: 64
+      normalization_mean: 0
+      normalization_std: 1
+  
+  
+  - name: XRAY-64x64-REAL
+    use_cuda: true
+    
+    model:
+      epochs: 2000
+      max_epochs_without_improvement: 500
+      learning_rate: 0.001
+      train_batch_size: 256
+      test_batch_size: 256
+      input_dropout: 0.2
+      dense_dropout: 0
+
+    dataset:
+      name: XRAY
+      train_path: data/preprocessed/xray_resized/train
+      test_path: data/preprocessed/xray_resized/test
+      image_resolution: 64
+      normalization_mean: 0
+      normalization_std: 1
+  

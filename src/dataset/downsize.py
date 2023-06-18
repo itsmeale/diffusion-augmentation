@@ -27,7 +27,7 @@ class DatasetDownsize:
         self.destination_folder.mkdir(parents=True, exist_ok=True)
 
         for im_path in tqdm(images_path):
-            img = Image.open(im_path).resize(size=self.desired_resolution)
+            img = Image.open(im_path).resize(size=self.desired_resolution).convert("L")
             img.save(self.destination_folder / im_path.name)
 
         return images_path
