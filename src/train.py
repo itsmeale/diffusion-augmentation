@@ -40,11 +40,13 @@ def make_hparam_dict(
 
 def load_dataset(
     train_path: str,
+    validation_path: str,
     test_path: str,
     dataset_name: str,
     dataset_resolution: int,
     normalize_params: Tuple,
     train_batch: int,
+    val_batch: int,
     test_batch: int,
 ):
     logger.info("Loading training and test data")
@@ -54,6 +56,7 @@ def load_dataset(
         "XRAY": partial(
             load_xray_dataset,
             train_path=train_path,
+            val_path=validation_path,
             test_path=test_path,
             dataset_resolution=dataset_resolution,
             normalize_params=normalize_params,
@@ -65,17 +68,32 @@ def load_dataset(
     if not dataset_loader:
         raise ValueError(f"Dataset {dataset_name} not available.")
 
-    train_dataset, test_dataset = dataset_loader()
+    train_dataset, val_dataset, test_dataset = dataset_loader()
 
     train_loader = DataLoader(train_dataset, batch_size=train_batch, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=val_batch, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=test_batch, shuffle=True)
 
-    return train_dataset, test_dataset, train_loader, test_loader
+    return (
+        train_dataset,
+        val_dataset,
+        test_dataset,
+        train_loader,
+        val_loader,
+        test_loader,
+    )
 
 
-def load_xray_dataset(train_path, test_path, dataset_resolution, normalize_params):
+def load_xray_dataset(
+    train_path, val_path, test_path, dataset_resolution, normalize_params
+):
     train_dataset = XRayDataset(
         root_dir=train_path,
+        image_resolution=dataset_resolution,
+        normalize_params=normalize_params,
+    )
+    val_dataset = XRayDataset(
+        root_dir=val_path,
         image_resolution=dataset_resolution,
         normalize_params=normalize_params,
     )
@@ -84,7 +102,7 @@ def load_xray_dataset(train_path, test_path, dataset_resolution, normalize_param
         image_resolution=dataset_resolution,
         normalize_params=normalize_params,
     )
-    return train_dataset, test_dataset
+    return train_dataset, val_dataset, test_dataset
 
 
 def load_mhist_dataset():
@@ -129,14 +147,23 @@ def train(experiment_cfg: Dict):
         experiment_name=f"runs/{EXP_NAME}", hparams_dict=hparams_dict
     )
 
-    train_dataset, test_dataset, train_loader, test_loader = load_dataset(
+    (
+        train_dataset,
+        val_dataset,
+        test_dataset,
+        train_loader,
+        val_loader,
+        test_loader,
+    ) = load_dataset(
         train_path=experiment_cfg.dataset.train_path,
+        validation_path=experiment_cfg.dataset.validation_path,
         test_path=experiment_cfg.dataset.test_path,
         dataset_name=DATASET_NAME,
         dataset_resolution=DATASET_RESOLUTION,
         normalize_params=NORMALIZE_PARAMS,
         train_batch=TRAIN_BATCH_SIZE,
         test_batch=TEST_BATCH_SIZE,
+        val_batch=experiment_cfg.model.val_batch_size,
     )
 
     # setup model
@@ -146,6 +173,7 @@ def train(experiment_cfg: Dict):
     if USE_CUDA and torch.cuda.is_available():
         logger.info("Loading data and model to GPU")
         train_dataset.to_cuda()
+        val_dataset.to_cuda()
         test_dataset.to_cuda()
         model.to("cuda")
 
@@ -153,16 +181,19 @@ def train(experiment_cfg: Dict):
     optimizer = torch.optim.SGD(params=model.parameters(), lr=LR, momentum=0.9)
     loss_fn = nn.BCELoss()
 
+    logger.info(f"Starting experiment {EXP_NAME}")
+
     TrainTestLoop(
         model,
         loss_fn,
         optimizer,
         train_dataset,
+        val_dataset,
         test_dataset,
-        epochs=EPOCHS,
-        experiment_logger=exp_logger,
-        max_epochs_without_improvement=MAX_EPOCHS_WITHOUT_IMPROVEMENT,
-        batch_size=TRAIN_BATCH_SIZE,
+        EPOCHS,
+        exp_logger,
+        MAX_EPOCHS_WITHOUT_IMPROVEMENT,
+        TRAIN_BATCH_SIZE,
     ).run()
 
     log_experiment_report(experiment_cfg.name, model, test_dataset, exp_logger)
@@ -171,9 +202,9 @@ def train(experiment_cfg: Dict):
 @hydra.main(version_base=None, config_path="../conf", config_name="experiments")
 def main(cfg):
     for experiment_cfg in cfg.experiments:
-        for i in range(50):
-            train(experiment_cfg=experiment_cfg)
 
+        for i in range(30):
+            train(experiment_cfg=experiment_cfg)
 
 
 if __name__ == "__main__":

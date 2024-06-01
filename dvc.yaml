@@ -1,0 +1,30 @@
+stages:
+  preprocessing:
+    cmd: python src/dataset/downsize.py
+    deps:
+      - data/raw/xray/train/
+      - data/raw/xray/test/
+      - data/raw/xray/val/
+    outs:
+      - data/preprocessed/xray_resized/train/
+      - data/preprocessed/xray_resized/test/
+      - data/preprocessed/xray_resized/val/
+  
+  difussion:
+    cmd: python src/diffusion/diffusion_test.py
+    deps:
+      - data/preprocessed/xray_resized/train/
+      - data/preprocessed/xray_resized/test/
+      - data/preprocessed/xray_resized/val/
+    outs:
+      - data/preprocessed/xray_generated/train/
+      - results/xray_model
+  
+  train:
+    cmd: python src/train.py
+    deps:
+      - conf/experiments.yaml
+      - data/preprocessed/xray_resized/train/
+      - data/preprocessed/xray_resized/test/
+      - data/preprocessed/xray_resized/val/
+      - data/preprocessed/xray_generated/train/

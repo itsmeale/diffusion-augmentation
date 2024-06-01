@@ -3,6 +3,10 @@ from typing import List
 
 from uuid import uuid4
 
+from pathlib import Path
+
+import pandas as pd
+
 from dataclasses import dataclass
 import numpy as np
 import torch
@@ -64,19 +68,14 @@ def log_experiment_report(exp_name: str, model, test_dataset, exp_logger):
 
     eval_dataclass = EvalMetrics(
         experiment_name=exp_name,
-
-        precision= tp / (tp+fp),
-        recall= tp / (tp+fn),
-        accuracy= (tp+tn) / (tp+tn+fp+fn),
-
+        precision=tp / (tp + fp),
+        recall=tp / (tp + fn),
+        accuracy=(tp + tn) / (tp + tn + fp + fn),
         true_positive=tp,
         true_negative=tn,
-
         false_positive=fp,
         false_negative=fn,
-
         precision_recall_curve=(precision, recall, thresholds),
-
         y_true=labels,
         y_pred=y_pred,
         scores=scores,
@@ -86,4 +85,34 @@ def log_experiment_report(exp_name: str, model, test_dataset, exp_logger):
         pickle.dump(eval_dataclass, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
+def build_experiment_metrics_report():
 
+    results_path = Path("data/results/eval_metrics")
+
+    data_elements = []
+
+    for experiment_eval in results_path.iterdir():
+
+        if not str(experiment_eval).endswith("pkl"):
+            continue
+
+        with open(experiment_eval, "rb") as f:
+            eval = pickle.load(f)
+
+        data_elements.append(
+            {
+                "experiment_name": eval.experiment_name,
+                "accuracy": eval.accuracy,
+                "recall": eval.recall,
+                "precision": eval.precision,
+                "precision_recall_curve": eval.precision_recall_curve,
+            }
+        )
+
+    df = pd.DataFrame(data_elements)
+
+    df.to_parquet(Path("data/results/confusion_matrix_metrics.parquet"))
+
+
+if __name__ == "__main__":
+    build_experiment_metrics_report()

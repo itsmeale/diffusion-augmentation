@@ -62,20 +62,23 @@ class ExperimentSerializer:
             run_df["experiment_name"] = self.experiment_name
             run_df["run"] = run.name
             runs_dfs.append(run_df)
-        
+
         return pd.concat(runs_dfs)
 
 
 def main():
     experiments = [
+        "XRAY-64x64-SYNTHETIC-BALANCED",
         "XRAY-64x64-SYNTHETIC-UNBALANCED",
-        "XRAY-64x64-REAL"
+        "XRAY-64x64-REAL",
     ]
 
     for exp_name in experiments:
         exp = ExperimentSerializer(experiment_name=exp_name)
         df = exp.serialize()
-        df.to_parquet(f"data/results/{slugify(exp_name, separator='_')}.parquet", index=False)
+        df.to_parquet(
+            f"data/results/{slugify(exp_name, separator='_')}.parquet", index=False
+        )
 
     logger.info("Experiments serialization runs successfully.")
 

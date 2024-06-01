@@ -1,0 +1,53 @@
+schema: '2.0'
+stages:
+  preprocessing:
+    cmd: python src/dataset/downsize.py
+    deps:
+    - path: data/raw/xray/test/
+      md5: 227ead8b20e5b527a0900911f54bbd19.dir
+      size: 79069091
+      nfiles: 625
+    - path: data/raw/xray/train/
+      md5: ec967913ebbc3c55b412f60fdfc532b4.dir
+      size: 1154764220
+      nfiles: 5219
+    - path: data/raw/xray/val/
+      md5: 624409d747735cc7ba24b0f995d52026.dir
+      size: 3061171
+      nfiles: 19
+    outs:
+    - path: data/preprocessed/xray_resized/test/
+      md5: 94dd2cf38326924f2f097654acd60133.dir
+      size: 702047
+      nfiles: 624
+    - path: data/preprocessed/xray_resized/train/
+      md5: 1c6a7f257c0570e88f5a7a5c4541e0ec.dir
+      size: 5800551
+      nfiles: 5216
+    - path: data/preprocessed/xray_resized/val/
+      md5: d542901a050422ed7774aac7bfe76648.dir
+      size: 17489
+      nfiles: 16
+  difussion:
+    cmd: python src/diffusion/diffusion_test.py
+    deps:
+    - path: data/preprocessed/xray_resized/test/
+      md5: 94dd2cf38326924f2f097654acd60133.dir
+      size: 702047
+      nfiles: 624
+    - path: data/preprocessed/xray_resized/train/
+      md5: 1c6a7f257c0570e88f5a7a5c4541e0ec.dir
+      size: 5800551
+      nfiles: 5216
+    - path: data/preprocessed/xray_resized/val/
+      md5: d542901a050422ed7774aac7bfe76648.dir
+      size: 17489
+      nfiles: 16
+    outs:
+    - path: data/preprocessed/xray_generated/train/
+      md5: a0dff45de9a289465283e62702fe36d8.dir
+      size: 10568972
+      nfiles: 7750
+    - path: results/xray_model
+      md5: d115019d6f3e475d704dd1a712a4e2d6
+      size: 2955246

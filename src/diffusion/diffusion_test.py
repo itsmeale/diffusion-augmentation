@@ -16,7 +16,9 @@ class XRAYDiffusionModel:
         ).cuda()
 
         self.diffusion = GaussianDiffusion(
-            self.model, image_size=64, timesteps=150,
+            self.model,
+            image_size=64,
+            timesteps=150,
         ).cuda()
 
         self.trainer = Trainer(
